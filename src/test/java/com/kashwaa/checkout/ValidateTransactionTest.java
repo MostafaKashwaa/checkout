@@ -6,14 +6,14 @@ import static com.kashwaa.checkout.Helper.basketStub;
 import static com.kashwaa.checkout.Helper.createOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class CheckoutTransactionTest {
+class ValidateTransactionTest {
 
     @Test
     void ExecuteSetsBasketGeneratedOrderToPresenter() {
         var presenter = new TestPresenter();
         var order = createOrder(5, 0);
         var basket = basketStub(order);
-        var transaction = new CheckoutTransaction(basket, presenter);
+        var transaction = new ValidateTransaction(basket, presenter);
 
         transaction.execute();
 

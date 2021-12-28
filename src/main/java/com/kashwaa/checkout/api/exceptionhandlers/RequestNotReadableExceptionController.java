@@ -10,14 +10,14 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 @ControllerAdvice
-public class EmptyBodyExceptionController {
+public class RequestNotReadableExceptionController {
 
     @ExceptionHandler
     public ResponseEntity<Object> handler(HttpMessageNotReadableException exception) {
         Map<String, Object> jsonMap = new HashMap<>();
         jsonMap.put("code", 400);
         jsonMap.put("status", "Bad Request");
-        jsonMap.put("message", "Required request body is missing");
+        jsonMap.put("message", "Request is not readable.");
         return ResponseEntity.status(400).body(jsonMap);
     }
 }

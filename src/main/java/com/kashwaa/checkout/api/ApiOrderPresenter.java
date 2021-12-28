@@ -14,6 +14,8 @@ public class ApiOrderPresenter implements OrderPresenter {
         this.order = order;
     }
 
+    public Order getOrder() { return this.order; }
+
     public ResponseEntity<Object> getResponse() {
         if (order.isValid())
             return createResponse(200, "success", order.getSummary());

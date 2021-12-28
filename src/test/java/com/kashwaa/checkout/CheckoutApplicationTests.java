@@ -1,12 +1,18 @@
 package com.kashwaa.checkout;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kashwaa.checkout.api.data.paymob.PaymentFrame;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.net.URI;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -20,15 +26,15 @@ class CheckoutApplicationTests {
     private MockMvc mockMvc;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Test
     void contextLoads() {
     }
 
     @Test
-    void checkoutWithNoBodyReturnsCode_400() throws Exception {
-        this.mockMvc.perform(post("/checkout"))
+    void validateWithNoBodyReturnsCode_400() throws Exception {
+        this.mockMvc.perform(post("/validate"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -37,9 +43,9 @@ class CheckoutApplicationTests {
     }
 
     @Test
-    void checkoutRespondsWith_200_ForValidBasket() throws Exception {
+    void validateRespondsWith_200_ForValidBasket() throws Exception {
         this.mockMvc
-                .perform(post("/checkout")
+                .perform(post("/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBasketJson(150, true)))
                 .andDo(print())
@@ -49,9 +55,9 @@ class CheckoutApplicationTests {
     }
 
     @Test
-    void checkoutRespondsWith_422_ForInvalidBasket() throws Exception {
+    void validateRespondsWith_422_ForInvalidBasket() throws Exception {
         this.mockMvc
-                .perform(post("/checkout")
+                .perform(post("/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBasketJson(10, true)))
                 .andDo(print())
@@ -59,6 +65,28 @@ class CheckoutApplicationTests {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value(422));
 
+    }
+
+    @Test
+    void checkoutReturnsAUrlForValidBasket() throws Exception {
+        var result = this.mockMvc
+                .perform(post("/checkout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBasketJson(150, true))
+                ).andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.url").value(Matchers.containsString("accept.paymob.com")));
+    }
+
+    @Test
+    void checkoutReturns_422_ForInvalidRequest() throws Exception {
+        var result = this.mockMvc
+                .perform(post("/checkout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBasketJson(15, true))
+                ).andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value(422));
     }
 
     private String createBasketJson(int totalPrice, boolean allAvailable) {

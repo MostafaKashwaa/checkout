@@ -11,7 +11,7 @@ public class MinimumTotalValidator implements BasketValidator {
     public List<String> validate(Basket basket) {
         List<String> messages = new ArrayList<>();
         if (basket.getTotal() < 100) {
-            messages.add("Total basket money is less than 100");
+            messages.add("Total basket money is less than 100\n");
         }
         return messages;
     }
