@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class PaymentFrame {
+public class PaymentResponse {
    String url;
 }
