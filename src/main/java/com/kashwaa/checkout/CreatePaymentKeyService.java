@@ -3,6 +3,7 @@ package com.kashwaa.checkout;
 import com.kashwaa.checkout.api.data.paymob.*;
 import com.kashwaa.checkout.domain.InvalidOrderException;
 import com.kashwaa.checkout.domain.Order;
+import com.kashwaa.checkout.domain.PaymentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,14 +40,14 @@ public class CreatePaymentKeyService {
         this.iframeId = iframeId;
     }
 
-    public PaymentFrame execute(Order order) {
+    public PaymentResponse execute(Order order) {
         if (!order.isValid()) {
-            var msg = order.getErrors().stream().collect(Collectors.joining("\n"));
+            var msg = String.join("\n", order.getErrors());
             throw new InvalidOrderException(msg);
         }
         var token = authenticateRequest().getToken();
         var registration = registerOrder(token, order);
-        return createPaymentKey(token, order, String.valueOf(registration.getId()));
+        return createPaymentKey(token, order, registration.getId());
     }
 
     public AuthenticationResponseDto authenticateRequest() {
@@ -63,15 +64,17 @@ public class CreatePaymentKeyService {
                 RegistrationResponseDto.class);
     }
 
-    public PaymentFrame createPaymentKey(String token, Order order, String orderId) {
+    public PaymentResponse createPaymentKey(String token, Order order, int orderId) {
         var result = restTemplate.postForObject(
                 payUrl,
                 preparePayDto(order, token, orderId),
                 PaymentResponseDto.class
         );
+        if (result == null) throw new PaymentException();
+
         var url = String.format("https://accept.paymob.com/api/acceptance/iframes/%d?payment_token=%s",
                 iframeId, result.getToken());
-        return new PaymentFrame(url);
+        return new PaymentResponse(url, orderId);
     }
 
     private RegistrationRequestDto prepareOrderDto(Order order, String token) {
@@ -84,12 +87,12 @@ public class CreatePaymentKeyService {
         );
     }
 
-    private PaymentRequestDto preparePayDto(Order order, String token, String orderId) {
+    private PaymentRequestDto preparePayDto(Order order, String token, int orderId) {
         return new PaymentRequestDto(
                 token,
                 String.format("%.0f", order.getTotalAvailable() * 100),
                 3600,
-                orderId,
+                String.valueOf(orderId),
                 new BillingData("Ali", "Hamed", "Ali@Hamed.com", "01001001010"),
                 "EGP",
                 cardIntegration,

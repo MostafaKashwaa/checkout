@@ -1,18 +1,13 @@
 package com.kashwaa.checkout;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kashwaa.checkout.api.data.paymob.PaymentFrame;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.net.URI;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -68,14 +63,15 @@ class CheckoutApplicationTests {
     }
 
     @Test
-    void checkoutReturnsAUrlForValidBasket() throws Exception {
+    void checkoutReturnsAUrlAndOrderIdForValidBasket() throws Exception {
         var result = this.mockMvc
                 .perform(post("/checkout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBasketJson(150, true))
                 ).andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.url").value(Matchers.containsString("accept.paymob.com")));
+                .andExpect(jsonPath("$.frameUrl").value(Matchers.containsString("accept.paymob.com")))
+                .andExpect(jsonPath("$.orderId").isNumber());
     }
 
     @Test

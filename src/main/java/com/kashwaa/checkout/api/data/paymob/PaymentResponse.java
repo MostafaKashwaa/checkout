@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class PaymentResponse {
-   String url;
+   String frameUrl;
+   int orderId;
 }

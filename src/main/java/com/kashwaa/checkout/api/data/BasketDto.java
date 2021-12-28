@@ -12,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BasketDto {
-    UserDto user;
     List<Item> items = List.of();
 
     public Basket toDomain() {

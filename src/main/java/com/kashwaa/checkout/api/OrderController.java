@@ -25,7 +25,7 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
-    public PaymentFrame checkout(@RequestBody BasketDto basket) {
+    public PaymentResponse checkout(@RequestBody BasketDto basket) {
         new ValidateTransaction(basket.toDomain(), presenter).execute();
         return paymentService.execute(presenter.getOrder());
     }
